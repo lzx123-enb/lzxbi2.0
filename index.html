@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>LZXBI 人格测试</title>
+
+<style>
+body {
+    background: #f3f5f4;
+    font-family: -apple-system;
+}
+
+.container {
+    max-width: 500px;
+    margin: auto;
+    padding: 15px;
+}
+
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.option {
+    border: 1px solid #ddd;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.option:hover {
+    background: #f0f7f4;
+}
+
+/* MBTI风格结果卡片 */
+.result-card {
+    background: linear-gradient(135deg, #1f1f1f, #2e7d32);
+    color: white;
+    border-radius: 20px;
+    padding: 25px;
+    text-align: center;
+}
+
+.result-card img {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.result-type {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.result-sub {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+.result-desc {
+    margin-top: 15px;
+    line-height: 1.6;
+}
+
+.result-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.result-title {
+    font-size: 26px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="app"></div>
+
+<!-- 截图库 -->
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<script>
+let scores = {L:0,X:0,Z:0,B:0};
+let index = 0;
+
+const questions = [
+{q:"刷朋友圈时，突然看到 lzx 发了一张自拍，你的第一反应是？",
+A:["L","秒赞+嫡长评：“这集真妈妈”"],
+B:["X","默默保存图片，但绝不点赞"],
+C:["Z","放大找瑕疵，然后冷笑一声"],
+D:["B","直接划走，跟我有啥关系"]},
+
+{q:"lzx 半夜给你发消息：“在吗？聊聊？” 你会？",
+A:["L","心跳加速，立刻回复：“在！聊到天亮都行！”"],
+B:["X","等两分钟再回，假装淡定：“嗯，说。”"],
+C:["L","内心狂喜但只回一个：“？”"],
+D:["B","装死，第二天说：“啊昨晚睡了”"]},
+
+{q:"假如 lzx 送你一个礼物，你希望是？",
+A:["L","手写的一封长信"],
+B:["X","第五人格虚妄"],
+C:["Z","一张写有“欠你一顿饭”的纸条"],
+D:["B","一个能离lzx远点的机票"]},
+
+{q:"有人说 lzx 坏话，你当场听到会？",
+A:["L","直接开怼：“你再说一遍试试？”"],
+B:["X","心里记仇但表面微笑：“每个人看法不同嘛”"],
+C:["Z","偷偷录音，发给lzx邀功"],
+D:["B","加入讨论：“其实我也觉得有点……”"]},
+
+{q:"你梦到和 lzx 一起被困在电梯里，醒来后你会？",
+A:["L","立刻记下梦境细节"],
+B:["X","回味一下，然后正常起床"],
+C:["Z","查周公解梦：“梦见lzx意味着什么？”"],
+D:["B","庆幸只是梦，太尴尬了"]},
+
+{q:"lzx 在群里发了一个冷笑话，没人回应。你会？",
+A:["L","连发十个“哈哈哈”并复制笑话"],
+B:["X","私聊lzx：“笑死了”"],
+C:["Z","666"],
+D:["B","🤡"]},
+
+{q:"假如你有一个超能力，对 lzx 你会用？",
+A:["L","读心术——想知道lzx怎么看我"],
+B:["X","隐身术——偷偷跟着lzx一整天"],
+C:["Z","时间暂停——把lzx朋友圈全点赞一遍"],
+D:["B","传送术——把lzx送到火星"]},
+
+{q:"lzx 突然关注了你所有社交账号，你会？",
+A:["L","激动得发一条：“我圆满了”"],
+B:["X","立刻把以前发疯的内容设为私密"],
+C:["Z","反向关注lzx的小号"],
+D:["B","注销账号跑路"]},
+
+{q:"用三个字形容你对 lzx 的态度？",
+A:["L","爱死楼自习"],
+B:["X","随便吧"],
+C:["Z","烦死了"],
+D:["B","谁啊你"]},
+
+{q:"最后一道送分题：你觉得自己对 lzx 的真实感情是？",
+A:["L","痴迷上头，lzx是我生命的光"],
+B:["X","有点喜欢，但死要面子"],
+C:["Z","又爱又恨，主打一个别扭"],
+D:["B","毫无波澜，甚至想笑"]},
+
+{q:"如果lzx突然说“你可以当我一天宠物”，你会？",
+A:["L","当场学狗叫：“汪汪，主人！”"],
+B:["X","问他：“能当猫吗？狗太累。”"],
+C:["Z","说：“我当你爹行不行？”"],
+D:["B","回：“lzx是谁？你是不是认错人了？”"]},
+
+{q:"lzx发了条语音，你点开发现是30秒的沉默，你会？",
+A:["L","认真听完，然后回：“呼吸声真好听。”"],
+B:["X","回：“你睡着了？我也爱你。”"],
+C:["Z","回：“你再发这种我报警了。”"],
+D:["B","直接删掉聊天框"]},
+
+{q:"lzx不小心把水洒你身上了，你会？",
+A:["L","说：“没关系，这是爱的甘露。”"],
+B:["X","说：“你完了，请我喝一个月奶茶。”"],
+C:["Z","把自己的水也泼回去：“公平了。”"],
+D:["B","默默擦干，换件衣服，当没发生过"]}
+];
+
+function render(){
+    let q = questions[index];
+    document.getElementById("app").innerHTML = `
+    <div class="card">
+        <h3>第 ${index+1} 题</h3>
+        <p>${q.q}</p >
+
+        <div class="option" onclick="choose('${q.A[0]}')">A. ${q.A[1]}</div>
+        <div class="option" onclick="choose('${q.B[0]}')">B. ${q.B[1]}</div>
+        <div class="option" onclick="choose('${q.C[0]}')">C. ${q.C[1]}</div>
+        <div class="option" onclick="choose('${q.D[0]}')">D. ${q.D[1]}</div>
+    </div>`;
+}
+
+function choose(type){
+    scores[type]++;
+    index++;
+    if(index < questions.length){
+        render();
+    } else {
+        showResult();
+    }
+}
+
+function showResult(){
+    let result = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+
+    let data = {
+        L:{title:"狂热亲卫队",sub:"Lover Guard",desc:"随时随地嫡长评，lzx放个屁你都觉得香。",tag:"重度上头",img:"L.png"},
+        X:{title:"嘴硬王者",sub:"Tsundere",desc:"嘴上无所谓，背地疯狂收藏。",tag:"口嫌体正直",img:"X.png"},
+        Z:{title:"阴阳乐子人",sub:"Troll",desc:"嘴上在骂，心里在意。",tag:"反向喜欢",img:"Z.png"},
+        B:{title:"佛系路人",sub:"Bystander",desc:"纯吃瓜选手。",tag:"冷静旁观",img:"B.png"}
+    };
+
+    let percent = Math.floor(Math.random()*40+60);
+
+    document.getElementById("app").innerHTML = `
+    <div class="result-card" id="resultCard">
+
+        < img src="${data[result].img}">
+
+        <div class="result-type">${result}</div>
+        <div class="result-sub">${data[result].title} · ${data[result].sub}</div>
+
+        <div class="result-tag">${data[result].tag}</div>
+
+        <div class="result-desc">${data[result].desc}</div>
+
+        <div style="margin-top:15px;font-size:18px;">
+            爱死lzx浓度：${percent}%
+        </div>
+
+        <div style="margin-top:15px;font-size:12px;opacity:0.7;">
+            快来测你是哪种lzx人格
+        </div>
+
+        <div style="margin-top:20px;">
+            <button onclick="downloadImage()">生成分享图</button>
+            <button onclick="location.reload()">再测一次</button>
+        </div>
+
+    </div>`;
+}
+
+function downloadImage(){
+    html2canvas(document.getElementById("resultCard")).then(canvas => {
+        let link = document.createElement("a");
+        link.download = "lzx测试结果.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+
+render();
+</script>
+
+</body>
+</html>
